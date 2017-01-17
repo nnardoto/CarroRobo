@@ -41,7 +41,7 @@ CarroRobo::CarroRobo(char IN1, char IN2, char IN3, char IN4)
 }
 
 // Construtor Padrão com Controle de Velocidade
-CarroRobo::CarroRobo(char IN1, char IN2, char IN3, char IN4, char RodaEsquerda, char RodaDireita)
+CarroRobo::CarroRobo(char IN1, char IN2, char IN3, char IN4, char SensorRodaEsquerda, char SensorRodaDireita)
 {
       // Define Pinos de Comando para a Roda DIREITA
       CarroRobo::IN1 = IN1;   
@@ -59,14 +59,14 @@ CarroRobo::CarroRobo(char IN1, char IN2, char IN3, char IN4, char RodaEsquerda, 
 
 
       // Velocidade Padrão
-      CarroRobo::Velocidade = 50.0; 
-      CarroRobo::IntervaloDeMedida = 200;
+      CarroRobo::Velocidade = 50.0; //pulsos por intervalo
+      CarroRobo::IntervaloDeMedida = 200; //ms
       
       
       // Ativa Funções para Medida de Velocidade
       // Subtrai-se 2 para adequar o uso da biblioteca (Apenas Pino 2 e 3 Podem Ser Usados)
-      attachInterrupt(RodaEsquerda - 2, CarroRobo::RodaE_interrupt, RISING);
-      attachInterrupt(RodaDireita - 2, CarroRobo::RodaD_interrupt, RISING);
+      attachInterrupt(SensorRodaEsquerda - 2, CarroRobo::RodaE_interrupt, RISING);
+      attachInterrupt(SensorRodaDireita - 2, CarroRobo::RodaD_interrupt, RISING);
       
       
       // Habilita Interrupção de Tempo Para Medir Velocidade - Lib. MsTimer2
@@ -151,15 +151,15 @@ void CarroRobo::MedirPulsos()
       noInterrupts();
       
             // Salva Ultima Medida
-            CarroRobo::RodaE.UltimaMedida = CarroRobo::RodaE.PulsosPorIntervalo;
-            CarroRobo::RodaD.UltimaMedida = CarroRobo::RodaD.PulsosPorIntervalo;
+            CarroRobo::RodaE.UltimaMedida = CarroRobo::RodaE.Pulsos;
+            CarroRobo::RodaD.UltimaMedida = CarroRobo::RodaD.Pulsos;
             
-            CarroRobo::RodaE.MedidaAcumulada = CarroRobo::RodaE.MedidaAcumulada + CarroRobo::RodaE.UltimaMedida;
-            CarroRobo::RodaD.MedidaAcumulada = CarroRobo::RodaD.MedidaAcumulada + CarroRobo::RodaD.UltimaMedida;  
+            CarroRobo::RodaE.MedidaAcumulada += CarroRobo::RodaE.UltimaMedida;
+            CarroRobo::RodaD.MedidaAcumulada += CarroRobo::RodaD.UltimaMedida;  
                       
             // Reinicia Contagem de Pulsos
-            CarroRobo::RodaE.PulsosPorIntervalo = 0;
-            CarroRobo::RodaD.PulsosPorIntervalo = 0;
+            CarroRobo::RodaE.Pulsos = 0;
+            CarroRobo::RodaD.Pulsos = 0;
         
       interrupts();
           
@@ -168,14 +168,14 @@ void CarroRobo::MedirPulsos()
 // Atualiza Contagem de Pulsos da Roda Esquerda
 void CarroRobo::RodaE_interrupt()
 {
-      CarroRobo::RodaE.PulsosPorIntervalo++;
+      CarroRobo::RodaE.Pulsos++;
 }
 
 
 // Atualiza Contagem e Pulsos da Roda Direira
 void CarroRobo::RodaD_interrupt()
 {
-      CarroRobo::RodaD.PulsosPorIntervalo++;
+      CarroRobo::RodaD.Pulsos++;
 }
 
 
@@ -224,4 +224,19 @@ long long CarroRobo::PulsosAcumulados(char roda)
       {
             return CarroRobo::RodaD.MedidaAcumulada;
       } 
+}
+
+
+
+// Reseta Valores Acumulados
+void CarroRobo::ResetPulsosAcumulados(char roda)
+{
+      if(roda == ESQUERDA)
+      {
+            CarroRobo::RodaE.MedidaAcumulada = 0;
+      }
+      else if(roda == DIREITA)
+      {
+            CarroRobo::RodaD.MedidaAcumulada = 0;
+      }
 }

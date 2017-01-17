@@ -38,8 +38,8 @@
 // Cria Estrutura Básica de Uma Roda
 struct Roda
 {
-      int PulsosPorIntervalo = 0;
-      int UltimaMedida = 0;
+      double Pulsos = 0;
+      double UltimaMedida = 0;
       long long MedidaAcumulada = 0;
       float Potencia = 0;
 };
@@ -89,9 +89,6 @@ class CarroRobo
             // Incrementa a cada Interrupção do Encoder
             static void RodaD_interrupt();
             static void RodaE_interrupt();
-            
-
-            
             
             
 };
